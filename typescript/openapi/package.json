@@ -1,0 +1,26 @@
+{
+  "name": "my-openapi-mcp",
+  "version": "1.0.0",
+  "description": "MCP server generated from OpenAPI spec",
+  "type": "module",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js --transport=streamable-http",
+    "dev": "tsx watch src/index.ts --transport=streamable-http"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.23.0",
+    "express": "^5.1.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.21",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

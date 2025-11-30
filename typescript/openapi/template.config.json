@@ -1,0 +1,15 @@
+{
+  "name": "openapi",
+  "description": "Generate MCP server from OpenAPI specification",
+  "postInit": "node scripts/post-init.js",
+  "options": {
+    "from-url": {
+      "description": "OpenAPI spec URL to generate from",
+      "example": "--from-url https://api.example.com/openapi.yaml"
+    },
+    "from-file": {
+      "description": "Local OpenAPI spec file to generate from",
+      "example": "--from-file ./openapi.yaml"
+    }
+  }
+}
