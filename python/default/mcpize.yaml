@@ -1,0 +1,13 @@
+version: 1
+runtime: python
+entry: src/my_mcp_server/server.py
+
+build:
+  install: uv sync --frozen --no-dev
+
+startCommand:
+  type: http
+  command: .venv/bin/python -m my_mcp_server.server
+
+configSchema:
+  source: code
