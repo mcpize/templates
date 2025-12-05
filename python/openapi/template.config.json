@@ -1,7 +1,7 @@
 {
   "name": "openapi",
   "description": "Generate Python MCP server from OpenAPI specification using FastMCP",
-  "postInit": "python scripts/post-init.py",
+  "postInit": "./scripts/post-init.py",
   "options": {
     "from-url": {
       "description": "OpenAPI spec URL to generate from",
