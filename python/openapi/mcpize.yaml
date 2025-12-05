@@ -1,0 +1,20 @@
+version: 1
+runtime: python
+entry: src/server/main.py
+
+build:
+  install: uv sync --frozen --no-dev
+
+startCommand:
+  type: http
+  command: .venv/bin/python -m server.main
+
+configSchema:
+  source: env
+  variables:
+    - name: OPENAPI_URL
+      description: URL to fetch OpenAPI specification (optional, falls back to local openapi.json)
+      required: false
+    - name: API_BASE_URL
+      description: Base URL for API calls (optional, extracted from spec if not set)
+      required: false

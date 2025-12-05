@@ -1,0 +1,19 @@
+{
+  "name": "openapi",
+  "description": "Generate Python MCP server from OpenAPI specification using FastMCP",
+  "postInit": "python scripts/post-init.py",
+  "options": {
+    "from-url": {
+      "description": "OpenAPI spec URL to generate from",
+      "example": "--from-url https://api.example.com/openapi.json"
+    },
+    "from-file": {
+      "description": "Local OpenAPI spec file to generate from",
+      "example": "--from-file ./openapi.yaml"
+    },
+    "api-base-url": {
+      "description": "Base URL for API calls (overrides spec servers)",
+      "example": "--api-base-url https://api.example.com"
+    }
+  }
+}
