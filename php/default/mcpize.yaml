@@ -1,0 +1,13 @@
+version: 1
+runtime: php
+entry: server.php
+
+build:
+  install: composer install --no-dev --optimize-autoloader
+
+startCommand:
+  type: stdio
+  command: php server.php
+
+configSchema:
+  source: code

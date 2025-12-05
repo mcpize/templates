@@ -1,0 +1,24 @@
+{
+    "name": "my-mcp-server/server",
+    "description": "MCP server created with MCPize",
+    "type": "project",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.1",
+        "mcp/sdk": "^0.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "scripts": {
+        "start": "php server.php",
+        "test": "phpunit"
+    }
+}
