@@ -50,7 +50,18 @@ function logResponse(method: string, result: unknown, latencyMs: number): void {
 
 function logError(method: string, error: unknown, latencyMs: number): void {
   const latency = formatLatency(latencyMs);
-  const errorMsg = error instanceof Error ? error.message : String(error);
+
+  let errorMsg: string;
+  if (error instanceof Error) {
+    errorMsg = error.message;
+  } else if (typeof error === "object" && error !== null) {
+    // JSON-RPC error object has { code, message, data? }
+    const rpcError = error as { message?: string; code?: number };
+    errorMsg = rpcError.message || `Error ${rpcError.code || "unknown"}`;
+  } else {
+    errorMsg = String(error);
+  }
+
   console.log(
     `${chalk.gray(`[${timestamp()}]`)} ${chalk.red("✖")} ${method} ${chalk.red(truncate(errorMsg))} ${chalk.gray(`(${latency})`)}`
   );
