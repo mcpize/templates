@@ -150,17 +150,17 @@ app.post("/mcp", async (req: Request, res: Response) => {
 
   // Capture response body for logging
   let responseBody = "";
-  const originalWrite = res.write.bind(res);
-  const originalEnd = res.end.bind(res);
+  const originalWrite = res.write.bind(res) as typeof res.write;
+  const originalEnd = res.end.bind(res) as typeof res.end;
 
-  res.write = function (chunk: unknown, ...args: unknown[]) {
+  res.write = function (chunk: unknown, encodingOrCallback?: BufferEncoding | ((error: Error | null | undefined) => void), callback?: (error: Error | null | undefined) => void) {
     if (chunk) {
       responseBody += typeof chunk === "string" ? chunk : Buffer.from(chunk as ArrayBuffer).toString();
     }
-    return originalWrite(chunk, ...args);
+    return originalWrite(chunk as string, encodingOrCallback as BufferEncoding, callback);
   };
 
-  res.end = function (chunk?: unknown, ...args: unknown[]) {
+  res.end = function (chunk?: unknown, encodingOrCallback?: BufferEncoding | (() => void), callback?: () => void) {
     if (chunk) {
       responseBody += typeof chunk === "string" ? chunk : Buffer.from(chunk as ArrayBuffer).toString();
     }
@@ -186,7 +186,7 @@ app.post("/mcp", async (req: Request, res: Response) => {
       }
     }
 
-    return originalEnd(chunk, ...args);
+    return originalEnd(chunk as string, encodingOrCallback as BufferEncoding, callback);
   };
 
   res.on("close", () => {
