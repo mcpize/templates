@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "MCP server created with MCPize"
 requires-python = ">=3.11"
 license = "MIT"
-dependencies = ["fastmcp>=2.13,<3"]
+dependencies = ["fastmcp>=2.13,<3", "rich>=14.0"]
 
 [project.urls]
 Repository = "https://github.com/username/my-mcp-server"
