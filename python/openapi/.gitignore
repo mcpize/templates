@@ -28,5 +28,8 @@ htmlcov/
 # OS
 .DS_Store
 
+# MCPize
+.mcpize/
+
 # Environment
 .env
