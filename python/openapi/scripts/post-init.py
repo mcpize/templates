@@ -36,7 +36,26 @@ def load_yaml(content: str) -> dict:
         return json.loads(content)
 
 
+def rename_project():
+    """Rename project from template defaults if project name differs."""
+    if project_name == "my-openapi-mcp":
+        return
+    pyproject_path = project_dir / "pyproject.toml"
+    if pyproject_path.exists():
+        content = pyproject_path.read_text()
+        content = content.replace('name = "my-openapi-mcp"', f'name = "{project_name}"')
+        content = content.replace(
+            'my-openapi-mcp = "server.main:main"',
+            f'{project_name} = "server.main:main"',
+        )
+        pyproject_path.write_text(content)
+        print(f"Updated project name to {project_name}")
+
+
 def main():
+    # Always rename project, even without spec options
+    rename_project()
+
     if not from_url and not from_file:
         print("No OpenAPI spec provided. Skipping download.")
         print("You can:")
@@ -110,14 +129,6 @@ LOG_LEVEL=INFO
 """
     env_path.write_text(env_content)
     print("Updated .env.example with configuration")
-
-    # Update pyproject.toml name if needed
-    pyproject_path = project_dir / "pyproject.toml"
-    if pyproject_path.exists() and project_name != "my-openapi-mcp":
-        content = pyproject_path.read_text()
-        content = content.replace('name = "my-openapi-mcp"', f'name = "{project_name}"')
-        pyproject_path.write_text(content)
-        print(f"Updated project name to {project_name}")
 
     print("\nOpenAPI MCP server initialized successfully!")
     print(f"API: {spec.get('info', {}).get('title', 'Unknown')}")
