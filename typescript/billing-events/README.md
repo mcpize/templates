@@ -18,6 +18,7 @@ Server runs at `http://localhost:8080/mcp`
 ```bash
 npm run dev     # Development mode with hot reload
 npm run build   # Compile TypeScript
+npm test        # Run tests
 npm start       # Run compiled server
 ```
 
@@ -26,7 +27,10 @@ npm start       # Run compiled server
 ```
 ├── src/
 │   ├── index.ts        # MCP server entry point
+│   ├── tools.ts        # Pure tool functions (testable)
 │   └── billing.ts      # MCPize event billing helper
+├── tests/
+│   └── tools.test.ts   # Tool unit tests
 ├── package.json        # Dependencies and scripts
 ├── tsconfig.json       # TypeScript configuration
 ├── mcpize.yaml         # MCPize deployment manifest
@@ -54,7 +58,8 @@ Configure events in MCPize dashboard: **Monetize > Events**.
 ## Testing
 
 ```bash
-npx @anthropic-ai/mcp-inspector
+npm test                                  # Run unit tests
+npx @anthropic-ai/mcp-inspector          # Interactive MCP testing
 ```
 
 Connect to `http://localhost:8080/mcp` to test tools interactively.

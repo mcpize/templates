@@ -7,7 +7,10 @@ This is an MCP (Model Context Protocol) server template for MCPize hosting platf
 ```
 ├── src/
 │   ├── index.ts      # Main server entry point
+│   ├── tools.ts      # Pure tool functions (testable)
 │   └── billing.ts    # MCPize billing helper
+├── tests/
+│   └── tools.test.ts # Tool unit tests
 ├── package.json      # Dependencies and scripts
 ├── tsconfig.json     # TypeScript configuration
 ├── mcpize.yaml       # MCPize deployment manifest
@@ -19,6 +22,7 @@ This is an MCP (Model Context Protocol) server template for MCPize hosting platf
 ```bash
 npm install          # Install dependencies
 npm run dev          # Run in development mode with hot reload
+npm test             # Run tests with vitest
 npm run build        # Compile TypeScript to JavaScript
 npm start            # Run compiled server
 ```

@@ -4,6 +4,7 @@ import express, { Request, Response } from "express";
 import { z } from "zod";
 import chalk from "chalk";
 import { createBilling } from "./billing.js";
+import { hello, echo, analyze } from "./tools.js";
 
 // ============================================================================
 // Dev Logging Utilities
@@ -95,7 +96,7 @@ server.registerTool(
     },
   },
   async ({ name }) => {
-    const output = { message: `Hello, ${name}! Welcome to MCP.` };
+    const output = hello(name);
     return {
       content: [{ type: "text", text: JSON.stringify(output) }],
       structuredContent: output,
@@ -118,10 +119,7 @@ server.registerTool(
     },
   },
   async ({ text }) => {
-    const output = {
-      echo: text,
-      timestamp: new Date().toISOString(),
-    };
+    const output = echo(text);
     return {
       content: [{ type: "text", text: JSON.stringify(output) }],
       structuredContent: output,
@@ -145,15 +143,12 @@ server.registerTool(
     },
   },
   async ({ data }) => {
-    // Perform your analysis logic here
-    const result = `Analysis of: ${data.substring(0, 50)}...`;
-    const tokens = data.length;
+    const output = analyze(data);
 
     // Charge for this premium feature
     // Event must be configured in MCPize dashboard: Monetize > Events
     billing.charge("premium-analysis");
 
-    const output = { result, tokens };
     return {
       content: [{ type: "text", text: JSON.stringify(output) }],
       structuredContent: output,

@@ -22,18 +22,20 @@ if (projectName === TEMPLATE_NAME) {
   process.exit(0);
 }
 
-const filePath = path.join(projectDir, "src", "index.ts");
-if (!fs.existsSync(filePath)) {
-  process.exit(0);
-}
+// Files to update with project name
+const filesToUpdate = [
+  { path: path.join(projectDir, "src", "index.ts"), desc: "src/index.ts" },
+  { path: path.join(projectDir, "README.md"), desc: "README.md" },
+];
 
-const content = fs.readFileSync(filePath, "utf-8");
-const updated = content.replace(
-  `name: "${TEMPLATE_NAME}"`,
-  `name: "${projectName}"`
-);
+for (const { path: filePath, desc } of filesToUpdate) {
+  if (!fs.existsSync(filePath)) continue;
 
-if (content !== updated) {
-  fs.writeFileSync(filePath, updated);
-  console.log(`  Updated src/index.ts: server name -> "${projectName}"`);
+  const content = fs.readFileSync(filePath, "utf-8");
+  const updated = content.replaceAll(TEMPLATE_NAME, projectName);
+
+  if (content !== updated) {
+    fs.writeFileSync(filePath, updated);
+    console.log(`  Updated ${desc}: "${TEMPLATE_NAME}" -> "${projectName}"`);
+  }
 }

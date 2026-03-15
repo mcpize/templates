@@ -3,6 +3,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import express, { Request, Response } from "express";
 import { z } from "zod";
 import chalk from "chalk";
+import { hello, echo } from "./tools.js";
 
 // ============================================================================
 // Dev Logging Utilities
@@ -90,7 +91,7 @@ server.registerTool(
     },
   },
   async ({ name }) => {
-    const output = { message: `Hello, ${name}! Welcome to MCP.` };
+    const output = hello(name);
     return {
       content: [{ type: "text", text: JSON.stringify(output) }],
       structuredContent: output,
@@ -113,10 +114,7 @@ server.registerTool(
     },
   },
   async ({ text }) => {
-    const output = {
-      echo: text,
-      timestamp: new Date().toISOString(),
-    };
+    const output = echo(text);
     return {
       content: [{ type: "text", text: JSON.stringify(output) }],
       structuredContent: output,
