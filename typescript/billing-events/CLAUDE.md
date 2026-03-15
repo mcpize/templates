@@ -6,7 +6,8 @@ This is an MCP (Model Context Protocol) server template for MCPize hosting platf
 
 ```
 ├── src/
-│   └── index.ts      # Main server entry point
+│   ├── index.ts      # Main server entry point
+│   └── billing.ts    # MCPize billing helper
 ├── package.json      # Dependencies and scripts
 ├── tsconfig.json     # TypeScript configuration
 ├── mcpize.yaml       # MCPize deployment manifest
@@ -115,6 +116,27 @@ Deploy using MCPize CLI:
 mcpize deploy
 ```
 
+## Billing
+
+This template includes MCPize event billing via `src/billing.ts`.
+
+### Charging for tool usage
+
+```typescript
+import { createBilling } from "./billing.js";
+
+const billing = createBilling();
+
+// In your tool handler:
+billing.charge("event-name");      // Charge 1 unit
+billing.charge("event-name", 5);   // Charge 5 units
+
+// Apply middleware to auto-add X-MCPize-Charge header
+app.post("/mcp", billing.middleware(), async (req, res) => { ... });
+```
+
+Events must be configured in MCPize dashboard: **Monetize > Events**.
+
 ## Best Practices
 
 1. **Tools vs Resources**: Use tools for actions, resources for data
@@ -123,3 +145,4 @@ mcpize deploy
 4. **Descriptions**: Write clear descriptions for all tools and parameters
 5. **Validation**: Use Zod schemas for input validation
 6. **Environment Variables**: Use `process.env` for configuration, never hardcode secrets
+7. **Billing**: Only charge after successful operations, configure events in dashboard first

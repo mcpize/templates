@@ -208,12 +208,17 @@ app.post("/mcp", async (req: Request, res: Response) => {
   await transport.handleRequest(req, res, req.body);
 });
 
+// JSON error handler (Express defaults to HTML errors)
+app.use((_err: unknown, _req: Request, res: Response, _next: Function) => {
+  res.status(500).json({ error: "Internal server error" });
+});
+
 // ============================================================================
 // Start Server
 // ============================================================================
 
 const port = parseInt(process.env.PORT || "8080");
-app.listen(port, () => {
+const httpServer = app.listen(port, () => {
   console.log();
   console.log(chalk.bold("MCP Server running on"), chalk.cyan(`http://localhost:${port}`));
   console.log(`  ${chalk.gray("Health:")} http://localhost:${port}/health`);
@@ -224,4 +229,12 @@ app.listen(port, () => {
     console.log(chalk.gray("─".repeat(50)));
     console.log();
   }
+});
+
+// Graceful shutdown for Cloud Run (SIGTERM before kill)
+process.on("SIGTERM", () => {
+  console.log("Received SIGTERM, shutting down...");
+  httpServer.close(() => {
+    process.exit(0);
+  });
 });

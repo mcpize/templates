@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install all dependencies (including dev for build)
-RUN npm install
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -21,11 +21,11 @@ FROM node:22-alpine
 WORKDIR /app
 
 # Copy built files and dependencies
-COPY --from=builder /app/build ./build
+COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
 
 # Install only production dependencies
-RUN npm install --omit=dev --ignore-scripts
+RUN npm ci --omit=dev --ignore-scripts
 
 # Run as non-root user (Cloud Run best practice)
 USER node
@@ -34,4 +34,8 @@ USER node
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["node", "build/index.js", "--transport=streamable-http"]
+# Health check for Cloud Run
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+
+CMD ["node", "dist/index.js", "--transport=streamable-http"]

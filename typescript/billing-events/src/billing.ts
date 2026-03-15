@@ -1,11 +1,11 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { Response } from "express";
 
 /**
  * MCPize Billing Helper
  *
- * This helper allows you to charge for custom billing events when your MCP server
- * is hosted through MCPize gateway. The gateway processes the X-MCPize-Charge header
- * and records charges based on your configured event pricing.
+ * Uses AsyncLocalStorage to isolate charges per-request, preventing race conditions
+ * when Cloud Run handles concurrent requests in a single container.
  *
  * @example
  * ```typescript
@@ -33,11 +33,15 @@ interface ChargeRequest {
   count: number;
 }
 
-export class MCPizeBilling {
-  private pendingCharge: ChargeRequest | null = null;
+interface BillingContext {
+  pendingCharge: ChargeRequest | null;
+}
 
+const billingStorage = new AsyncLocalStorage<BillingContext>();
+
+export class MCPizeBilling {
   /**
-   * Queue a charge for a billing event
+   * Queue a charge for a billing event (stored per-request via AsyncLocalStorage)
    * @param event - The event code (must be configured in MCPize dashboard)
    * @param count - Number of units to charge (default: 1)
    */
@@ -46,54 +50,44 @@ export class MCPizeBilling {
       throw new Error("Count must be a positive integer");
     }
 
-    // Only one charge per request - last one wins
-    this.pendingCharge = { event, count };
-  }
-
-  /**
-   * Get the pending charge (if any)
-   */
-  getPendingCharge(): ChargeRequest | null {
-    return this.pendingCharge;
-  }
-
-  /**
-   * Clear the pending charge
-   */
-  clearCharge(): void {
-    this.pendingCharge = null;
-  }
-
-  /**
-   * Apply the charge header to a response
-   * @param res - Express response object
-   */
-  applyToResponse(res: Response): void {
-    if (this.pendingCharge) {
-      res.setHeader(
-        "X-MCPize-Charge",
-        JSON.stringify(this.pendingCharge)
-      );
-      this.pendingCharge = null;
+    const ctx = billingStorage.getStore();
+    if (ctx) {
+      // Only one charge per request - last one wins
+      ctx.pendingCharge = { event, count };
     }
   }
 
   /**
-   * Express middleware that adds the charge header to responses
+   * Get the pending charge for the current request (if any)
+   */
+  getPendingCharge(): ChargeRequest | null {
+    const ctx = billingStorage.getStore();
+    return ctx?.pendingCharge ?? null;
+  }
+
+  /**
+   * Express middleware that wraps each request in its own billing context
+   * and adds the X-MCPize-Charge header before the response is sent.
    * @returns Express middleware function
    */
   middleware() {
     return (_req: any, res: Response, next: () => void) => {
-      // Store original end function
-      const originalEnd = res.end.bind(res);
+      billingStorage.run({ pendingCharge: null }, () => {
+        const originalEnd = res.end.bind(res);
 
-      // Override end to add header before sending
-      res.end = ((...args: any[]) => {
-        this.applyToResponse(res);
-        return originalEnd(...args);
-      }) as typeof res.end;
+        res.end = ((...args: any[]) => {
+          const ctx = billingStorage.getStore();
+          if (ctx?.pendingCharge) {
+            res.setHeader(
+              "X-MCPize-Charge",
+              JSON.stringify(ctx.pendingCharge)
+            );
+          }
+          return originalEnd(...args);
+        }) as typeof res.end;
 
-      next();
+        next();
+      });
     };
   }
 }

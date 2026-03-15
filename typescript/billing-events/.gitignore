@@ -12,11 +12,7 @@ dist/
 # MCPize local config
 .mcpize/
 
-# Lock files (regenerated on npm install)
-package-lock.json
-
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
