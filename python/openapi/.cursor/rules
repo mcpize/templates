@@ -1,0 +1,40 @@
+# OpenAPI MCP Server Development Rules
+
+## Project Context
+Python MCP server generated from OpenAPI specification using FastMCP 2.0 with src-layout.
+
+## Structure
+- src/server/main.py: FastMCP.from_openapi() entry point, middleware, health endpoint
+- openapi.json: OpenAPI specification (downloaded at init)
+- mcpize.yaml: MCPize deployment config
+
+## Code Style
+- Python 3.13 with modern type hints
+- Google-style docstrings (Args/Returns)
+- Logging: logger.info("message %s", value) — lazy evaluation
+- Use async def for I/O (httpx, databases, files)
+
+## How It Works
+FastMCP.from_openapi() converts every OpenAPI endpoint into an MCP tool automatically.
+The server loads the spec from OPENAPI_URL (env var) or local openapi.json file.
+
+## Adding Custom Tools
+```python
+# In main.py, after mcp = create_mcp_server()
+@mcp.tool()
+def custom_tool(param: str) -> str:
+    """Custom tool description."""
+    return f"Result: {param}"
+```
+
+## Commands
+```
+uv sync                          # Install dependencies
+uv run python -m server.main     # Start server
+```
+
+## Important
+- Server: http://localhost:8080/mcp
+- Health: http://localhost:8080/health
+- Config: OPENAPI_URL, API_BASE_URL, PORT, LOG_LEVEL, ENV
+- Spec priority: OPENAPI_URL > local openapi.json
