@@ -2,6 +2,7 @@
 
 import contextlib
 import json
+import logging
 import signal
 import time
 from os import getenv
@@ -13,6 +14,11 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from .tools import delayed_echo, echo, hello
+
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    level=getenv("LOG_LEVEL", "INFO"),
+)
 
 # ============================================================================
 # Dev Logging Middleware

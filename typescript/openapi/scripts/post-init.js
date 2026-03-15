@@ -100,8 +100,30 @@ try {
       'setupStreamableHttpServer(server, parseInt(process.env.PORT || "8080"))',
     );
 
+    // Inject /health endpoint for Docker HEALTHCHECK and Cloud Run probes
+    if (!indexContent.includes("/health")) {
+      indexContent = indexContent.replace(
+        /(app\.listen\()/,
+        'app.get("/health", (_req, res) => { res.status(200).json({ status: "healthy" }); });\n\n  $1',
+      );
+    }
+
     fs.writeFileSync(indexPath, indexContent);
-    console.log("Patched PORT configuration.");
+    console.log("Patched PORT and health endpoint.");
+  }
+
+  // Also check streamable-http.ts where the Express app may be created
+  const transportPath = path.join(projectSrc, "streamable-http.ts");
+  if (fs.existsSync(transportPath)) {
+    let transportContent = fs.readFileSync(transportPath, "utf-8");
+    if (!transportContent.includes("/health")) {
+      transportContent = transportContent.replace(
+        /(app\.listen\()/,
+        'app.get("/health", (_req, res) => { res.status(200).json({ status: "healthy" }); });\n\n  $1',
+      );
+      fs.writeFileSync(transportPath, transportContent);
+      console.log("Injected /health endpoint into transport.");
+    }
   }
 
   // 5. Clean up generated directory
