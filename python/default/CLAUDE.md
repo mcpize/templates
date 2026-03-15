@@ -2,6 +2,21 @@
 
 Python MCP server built with FastMCP 2.0 using src-layout.
 
+## Renaming the Project
+
+The template uses `my_mcp_server` as the package name. To rename, update ALL of these:
+
+1. `src/my_mcp_server/` → `src/your_name/` (directory)
+2. `pyproject.toml` → name, `[project.scripts]` key+value, `[tool.hatch.build.targets.wheel]` packages
+3. `mcpize.yaml` → `entry: src/your_name/server.py` and `command: .venv/bin/python -m your_name.server`
+4. `Dockerfile` → `CMD [".venv/bin/python", "-m", "your_name.server"]`
+5. `Makefile` → `uv run your-name` (run target)
+6. `src/*/server.py` → `FastMCP("your-name")`
+7. `tests/test_tools.py` → `from your_name.tools import ...`
+
+Directory name uses underscores (`your_name`), package name uses hyphens (`your-name`).
+Missing any of these causes broken imports or failed deploys.
+
 ## Project Structure
 
 ```

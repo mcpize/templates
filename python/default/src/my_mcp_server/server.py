@@ -1,5 +1,6 @@
 """MCP server entry point."""
 
+import contextlib
 import json
 import signal
 import time
@@ -8,6 +9,8 @@ from os import getenv
 from fastmcp import FastMCP
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 from rich.console import Console
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from .tools import delayed_echo, echo, hello
 
@@ -47,16 +50,16 @@ class DevLoggingMiddleware(Middleware):
             return await call_next(context)
 
         method = context.method
-        params = context.params
+        message = context.message
 
         # Skip noisy notifications
         if method == "notifications/initialized":
             return await call_next(context)
 
         # Log request
-        if method == "tools/call" and params:
-            tool_name = getattr(params, "name", "unknown")
-            tool_args = getattr(params, "arguments", {})
+        if method == "tools/call" and message:
+            tool_name = getattr(message, "name", "unknown")
+            tool_args = getattr(message, "arguments", {})
             args_str = truncate(json.dumps(tool_args)) if tool_args else ""
             console.print(
                 f"[dim][{timestamp()}][/dim] [cyan]→[/cyan] tools/call [bold]{tool_name}[/bold]"
@@ -64,11 +67,11 @@ class DevLoggingMiddleware(Middleware):
             )
         else:
             params_str = ""
-            if params:
-                try:
-                    params_str = f" [dim]{truncate(json.dumps(params, default=str))}[/dim]"
-                except Exception:
-                    pass
+            if message:
+                with contextlib.suppress(Exception):
+                    params_str = (
+                        f" [dim]{truncate(json.dumps(message, default=str))}[/dim]"
+                    )
             console.print(f"[dim][{timestamp()}][/dim] [cyan]→[/cyan] {method}{params_str}")
 
         # Execute and time
@@ -81,18 +84,27 @@ class DevLoggingMiddleware(Middleware):
 
         if hasattr(result, "isError") and result.isError:
             error_msg = truncate(str(result))
-            console.print(f"[dim][{timestamp()}][/dim] [red]✖[/red] {method} [red]{error_msg}[/red] ({latency})")
+            console.print(
+                f"[dim][{timestamp()}][/dim] [red]✖[/red] {method}"
+                f" [red]{error_msg}[/red] ({latency})"
+            )
         elif method == "tools/call":
             # Extract tool result for display
             try:
                 content = getattr(result, "content", [])
                 if content and hasattr(content[0], "text"):
                     result_text = truncate(content[0].text)
-                    console.print(f"[dim][{timestamp()}][/dim] [green]←[/green] {result_text} ({latency})")
+                    console.print(
+                        f"[dim][{timestamp()}][/dim] [green]←[/green] {result_text} ({latency})"
+                    )
                 else:
-                    console.print(f"[dim][{timestamp()}][/dim] [green]✓[/green] tools/call ({latency})")
+                    console.print(
+                        f"[dim][{timestamp()}][/dim] [green]✓[/green] tools/call ({latency})"
+                    )
             except Exception:
-                console.print(f"[dim][{timestamp()}][/dim] [green]✓[/green] tools/call ({latency})")
+                console.print(
+                    f"[dim][{timestamp()}][/dim] [green]✓[/green] tools/call ({latency})"
+                )
         else:
             console.print(f"[dim][{timestamp()}][/dim] [green]✓[/green] {method} ({latency})")
 
@@ -107,6 +119,12 @@ mcp = FastMCP("my-mcp-server")
 
 # Add dev logging middleware
 mcp.add_middleware(DevLoggingMiddleware())
+
+# Health endpoint
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request) -> JSONResponse:
+    return JSONResponse({"status": "healthy"})
+
 
 # Register tools
 mcp.tool()(hello)

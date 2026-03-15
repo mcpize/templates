@@ -24,5 +24,8 @@ ENV PYTHONUNBUFFERED=1
 ENV LOG_LEVEL=INFO
 EXPOSE 8080
 
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD python -c "import os,urllib.request;urllib.request.urlopen('http://localhost:'+os.environ.get('PORT','8080')+'/health')" || exit 1
+
 # Direct python call - no uv overhead at runtime
 CMD [".venv/bin/python", "-m", "my_mcp_server.server"]
