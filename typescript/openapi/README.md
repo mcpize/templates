@@ -1,5 +1,7 @@
 # OpenAPI MCP Server Template
 
+[![MCPize](https://mcpize.com/badge/@mcpize/mcpize?type=hosted)](https://mcpize.com)
+
 Create an MCP server from any OpenAPI specification in one command.
 
 ## Quick Start

@@ -1,5 +1,7 @@
 # MCP Server (PHP)
 
+[![MCPize](https://mcpize.com/badge/@mcpize/mcpize?type=hosted)](https://mcpize.com)
+
 MCP server built with the [official PHP SDK](https://github.com/modelcontextprotocol/php-sdk).
 
 ## Quick Start

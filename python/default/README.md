@@ -1,5 +1,7 @@
 # my-mcp-server
 
+[![MCPize](https://mcpize.com/badge/@mcpize/mcpize?type=hosted)](https://mcpize.com)
+
 MCP server built with [FastMCP 2.0](https://gofastmcp.com) for [MCPize](https://mcpize.com).
 
 ## Requirements

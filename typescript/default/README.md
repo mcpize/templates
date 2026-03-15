@@ -1,5 +1,7 @@
 # my-mcp-server
 
+[![MCPize](https://mcpize.com/badge/@mcpize/mcpize?type=hosted)](https://mcpize.com)
+
 MCP server created with [MCPize](https://mcpize.com).
 
 ## Quick Start

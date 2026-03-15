@@ -1,5 +1,7 @@
 # OpenAPI MCP Server
 
+[![MCPize](https://mcpize.com/badge/@mcpize/mcpize?type=hosted)](https://mcpize.com)
+
 MCP server generated from OpenAPI specification using [FastMCP](https://gofastmcp.com/).
 
 ## Quick Start
