@@ -1,0 +1,5 @@
+{
+  "name": "billing-events",
+  "description": "TypeScript MCP server with event billing",
+  "postInit": "node scripts/post-init.js"
+}
