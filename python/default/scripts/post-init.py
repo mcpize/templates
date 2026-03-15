@@ -10,7 +10,6 @@ Environment variables (set by mcpize init):
 """
 
 import os
-import re
 import shutil
 from pathlib import Path
 
@@ -66,6 +65,8 @@ def main():
         "Makefile",
         f"src/{pkg_underscore}/server.py",
         "tests/test_tools.py",
+        "README.md",
+        "CLAUDE.md",
     ]
 
     for rel_path in files_to_update:
