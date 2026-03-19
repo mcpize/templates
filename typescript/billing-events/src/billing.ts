@@ -4,8 +4,8 @@ import { Response } from "express";
 /**
  * MCPize Billing Helper
  *
- * Uses AsyncLocalStorage to isolate charges per-request, preventing race conditions
- * when Cloud Run handles concurrent requests in a single container.
+ * Uses AsyncLocalStorage to isolate charges and subscriber identity per-request,
+ * preventing race conditions when Cloud Run handles concurrent requests in a single container.
  *
  * @example
  * ```typescript
@@ -14,16 +14,19 @@ import { Response } from "express";
  * const billing = new MCPizeBilling();
  *
  * // In your tool handler:
- * server.registerTool("analyze", { ... }, async (params, { res }) => {
+ * server.registerTool("analyze", { ... }, async (params) => {
  *   const result = await performAnalysis(params.data);
  *
  *   // Charge for the analysis event
  *   billing.charge("deep-analysis");
  *
+ *   // Get subscriber identity (injected by MCPize gateway)
+ *   const { userId } = billing.getSubscriber();
+ *
  *   return { content: [{ type: "text", text: result }] };
  * });
  *
- * // Apply middleware to add header to response
+ * // Apply middleware (reads identity headers + adds charge header to response)
  * app.post("/mcp", billing.middleware(), async (req, res) => { ... });
  * ```
  */
@@ -35,6 +38,8 @@ interface ChargeRequest {
 
 interface BillingContext {
   pendingCharge: ChargeRequest | null;
+  subscriberId: string | null;
+  subscriptionId: string | null;
 }
 
 const billingStorage = new AsyncLocalStorage<BillingContext>();
@@ -66,18 +71,34 @@ export class MCPizeBilling {
   }
 
   /**
+   * Get subscriber identity for the current request (injected by MCPize gateway)
+   * @returns userId (always present for authenticated requests) and subscriptionId (paid only)
+   */
+  getSubscriber(): { userId: string | null; subscriptionId: string | null } {
+    const ctx = billingStorage.getStore();
+    return {
+      userId: ctx?.subscriberId ?? null,
+      subscriptionId: ctx?.subscriptionId ?? null,
+    };
+  }
+
+  /**
    * Express middleware that wraps each request in its own billing context
    * and adds the X-MCPize-Charge header before the response is sent.
    * @returns Express middleware function
    */
   middleware() {
-    return (_req: any, res: Response, next: () => void) => {
-      billingStorage.run({ pendingCharge: null }, () => {
+    return (req: any, res: Response, next: () => void) => {
+      billingStorage.run({
+        pendingCharge: null,
+        subscriberId: req.headers["x-mcpize-user-id"] ?? null,
+        subscriptionId: req.headers["x-mcpize-subscription-id"] ?? null,
+      }, () => {
         const originalEnd = res.end.bind(res);
 
         res.end = ((...args: any[]) => {
           const ctx = billingStorage.getStore();
-          if (ctx?.pendingCharge) {
+          if (!res.headersSent && ctx?.pendingCharge) {
             res.setHeader(
               "X-MCPize-Charge",
               JSON.stringify(ctx.pendingCharge)

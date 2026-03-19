@@ -55,6 +55,32 @@ billing.charge("event-name", 5);   // Charge 5 units
 
 Configure events in MCPize dashboard: **Monetize > Events**.
 
+## Subscriber Identity
+
+MCPize gateway injects identity headers on every proxied request to your server:
+
+| Header | When Present | Use Case |
+|--------|-------------|----------|
+| `X-MCPize-User-ID` | Always (authenticated requests) | Per-user rate limiting, analytics, state |
+| `X-MCPize-Subscription-ID` | Paid subscriptions only | Tier-based access, billing reconciliation |
+
+**Pattern A — Express middleware** (rate limiting, logging):
+
+```typescript
+app.use((req, _res, next) => {
+  const userId = req.headers["x-mcpize-user-id"];
+  const subscriptionId = req.headers["x-mcpize-subscription-id"];
+  // rate limit, log, personalize...
+  next();
+});
+```
+
+**Pattern B — Inside tool handler** via billing helper:
+
+```typescript
+const { userId, subscriptionId } = billing.getSubscriber();
+```
+
 ## Testing
 
 ```bash

@@ -145,6 +145,12 @@ server.registerTool(
   async ({ data }) => {
     const output = analyze(data);
 
+    // Get subscriber identity (injected by MCPize gateway)
+    const { userId } = billing.getSubscriber();
+    if (isDev && userId) {
+      console.log(`  ${chalk.gray("subscriber:")} ${userId}`);
+    }
+
     // Charge for this premium feature
     // Event must be configured in MCPize dashboard: Monetize > Events
     billing.charge("premium-analysis");
@@ -162,6 +168,17 @@ server.registerTool(
 
 const app = express();
 app.use(express.json());
+
+// MCPize subscriber identity (injected by gateway on every request)
+// Use for rate limiting, logging, analytics, or per-user logic
+app.use((req: Request, _res: Response, next) => {
+  const userId = req.headers["x-mcpize-user-id"] as string | undefined;
+  const subscriptionId = req.headers["x-mcpize-subscription-id"] as string | undefined;
+  if (isDev && userId) {
+    console.log(`${chalk.gray(`[${timestamp()}]`)} ${chalk.blue("\u{1F464}")} ${userId}${subscriptionId ? ` (sub: ${subscriptionId})` : ""}`);
+  }
+  next();
+});
 
 // Health check endpoint (required for Cloud Run)
 app.get("/health", (_req: Request, res: Response) => {
